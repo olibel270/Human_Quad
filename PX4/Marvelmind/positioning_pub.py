@@ -3,6 +3,7 @@
 
 import rospy
 import numpy as np
+import sys
 from geometry_msgs.msg import PoseStamped, Quaternion
 from std_msgs.msg import Header
 from time import sleep, time, perf_counter
@@ -35,29 +36,34 @@ def positioning_pub():
     hedge.start()
 
     rospy.sleep(1) # let data show up in subs
-    while mavlink_pub.get_num_connections() <= 0:
-        pass
     while not rospy.is_shutdown():
         try:
             hedge.dataEvent.wait()
             hedge.dataEvent.clear()#get coordinates
 
             if (hedge.positionUpdated):
-                print(hedge.position)
+                position = hedge.position()
+            else:
+                continue
 
-        temp_x = hedge.position[1]
-        temp_y = hedge.position[2]
-        pose.position.x = (temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
-        pose.position.y = -(-temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
-        pose.position.z = -hedge.position[3]
+            pose.header = Header()
+            pose.header.stamp = rospy.Time.now()
+            temp_x = position[1]
+            temp_y = position[2]
+            pose.pose.position.x = (temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
+            pose.pose.position.y = -(-temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
+            pose.pose.position.z = -position[3]
 
-        pose.orentation = Quaternion(
+            pose.pose.orientation = Quaternion(
         	imu_data.orientation.x,
                 imu_data.orientation.y,
                 imu_data.orientation.z,
                 imu_data.orientation.w)
-        pose_pub.publish(pose)
+            pose_pub.publish(pose)
 
+        except KeyboardInterrupt:
+            hedge.stop()  # stop and close serial port
+            sys.exit()
 
 if __name__ == "__main__":
     positioning_pub()
