@@ -48,11 +48,11 @@ def positioning_pub():
 
             pose.header = Header()
             pose.header.stamp = rospy.Time.now()
-            temp_x = position[1]
-            temp_y = position[2]
-            pose.pose.position.x = (temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
-            pose.pose.position.y = -(-temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
-            pose.pose.position.z = -position[3]
+            temp_x = position[2]
+            temp_y = position[1]
+            pose.pose.position.y = (temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
+            pose.pose.position.x = -(-temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
+            pose.pose.position.z = position[3]
 
             pose.pose.orientation = Quaternion(
         	imu_data.orientation.x,
