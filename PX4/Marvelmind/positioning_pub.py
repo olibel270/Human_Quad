@@ -30,7 +30,7 @@ def positioning_pub():
 
     pose = PoseStamped()
 
-    hedge = MarvelmindHedge(tty = "/dev/ttyACM0", adr=None, debug=False) # create MarvelmindHedge thread
+    hedge = MarvelmindHedge(tty = "/dev/ttyACM1", adr=None, debug=False) # create MarvelmindHedge thread
     if (len(sys.argv)>1):
         hedge.tty= sys.argv[1]
     hedge.start()
@@ -50,9 +50,9 @@ def positioning_pub():
             pose.header.stamp = rospy.Time.now()
             temp_x = position[2]
             temp_y = position[1]
-            pose.pose.position.y = (temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
-            pose.pose.position.x = -(-temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
-            pose.pose.position.z = position[3]
+            pose.pose.position.x = (temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
+            pose.pose.position.y = -(-temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
+            pose.pose.position.z = -position[3]
 
             pose.pose.orientation = Quaternion(
         	imu_data.orientation.x,
