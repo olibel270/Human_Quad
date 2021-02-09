@@ -11,7 +11,7 @@ from sensor_msgs.msg import Imu
 from marvelmind import MarvelmindHedge
 import types
 
-BCN_OFFSET= 2.61799 #Reference frame offset in rad
+BCN_OFFSET= 2.70526 #Reference frame offset in rad
 
 imu_data = None
 
