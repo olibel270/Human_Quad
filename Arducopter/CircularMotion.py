@@ -19,14 +19,14 @@ def circular_waypoints(x, z, r,
 
         arr.append(l)
         i += 1
-    print(arr)  # print all the waypoints.
+    print(arr)  # print all the waypoints
 
 
 print("List of Waypoints from the circle with x = 1, z = 10, r = 1 and n = 4 :")
 circular_waypoints(1, 10, 1, 4)
 
 print("A specific Waypoint from collection :")
-print(arr[2])  # print only a specific waypoint.
+print(arr[2])  # print only a specific waypoint
 
 
 def pointcc(x, y, xx, yy):  # This function makes the quadcopter's Yawn angle points toward the center
