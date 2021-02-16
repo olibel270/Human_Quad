@@ -12,7 +12,7 @@ def circular_waypoints(x, z, r,
     v = R.from_quat([0, 0, np.sin(np.pi / n), np.cos(np.pi / n)])  # unit rotation quaternion
 
     i = 1
-    while i < n + 1:  # apply the rotation on the points n times.
+    while i < n + 1:  # apply the rotation on the points n times
         l = v.apply(p)
 
         p = l
