@@ -44,6 +44,15 @@ def pointcc(x, y, xx, yy):  # This function makes the quadcopter's Yawn angle po
 
 
 print("Yawn angle in radian for the quad at (-4, -7) to face the center of circle at (2, 3) :")
-YawnAng = pointcc(-4, -7, 2, 3)  # test
+YawAng = pointcc(-4, -7, 2, 3)  # test
 
-print(YawnAng)
+# v = R.from_quat([0, 0, np.sin(np.pi / n), np.cos(np.pi / n)])
+
+
+r = R.from_euler('z', YawAng, degrees=True)
+
+rquat = r.as_quat()
+
+print("The Yawn angle as a quaternion")
+print(rquat)
+
