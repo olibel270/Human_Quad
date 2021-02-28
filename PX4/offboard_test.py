@@ -8,6 +8,8 @@ from mavros_msgs.srv import SetMode, CommandBool
 from std_msgs.msg import Header
 
 current_pose = None
+FLY_TIME = 20 #20s total fly time for the test. Should be setpoint distance based, but good for now + it's just a test
+SETPOINT_FREQ = 5
 
 def pose_data_callback(pose):
     global current_pose
@@ -23,6 +25,14 @@ def publisher_thread(obj, publisher, rate, fly_time=0):
     print("Iterations: ", iterations)
     while count<iterations:
         publisher.publish(obj)
+        if(count==iterations/(1/5)):#8s
+            setpoint.pose.position.x -= 1.5
+        if(count==iterations/(2/5)):#12s
+            setpoint.pose.position.y -= 1.5
+        if(count==iterations/(3/5):#16s
+            setpoint.pose.position.x += 1.5
+        if(count==iterations/(4/5):#20s
+            setpoint.pose.position.y += 1.5
         r.sleep()
         count += 1
 
@@ -47,32 +57,14 @@ def offboard_test():
     setpoint.pose.position.z += 1
     
     print(setpoint)
-    x = threading.Thread(target=publisher_thread, args=(setpoint, setpoint_pub,5,10))
+    x = threading.Thread(target=publisher_thread, args=(setpoint, setpoint_pub, SETPOINT_FREQ, FLY_TIME))
     x.start()
-    #Set Offboard Mode
+    #Set Offboard Mode and fly a square
     mode_resp = mode_service(0,"OFFBOARD")
     x.join()
 
-    #Square
-
     #Land
     mode_service(0, "AUTO.LAND")
-    #count = 0
-    #while True:
-    #    setpoint_pub.publish(setpoint)
-    #    if(count==25):#5s
-    #        setpoint.pose.position.z += 0
-    #    if(count==50):#10s
-    #        setpoint.pose.position.x -= 1.5
-    #    if(count==65):#13s
-    #        setpoint.pose.position.y -= 1.5
-    #    if(count==80):#16s
-    #        setpoint.pose.position.x += 1.5
-    #    if(count==95):#19s
-    #        setpoint.pose.position.y += 1.5
-    #    r.sleep()
-    #    count +=1
-
 
 if __name__ == "__main__":
     offboard_test()
