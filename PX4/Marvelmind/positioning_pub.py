@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """ROS node that performs 3D positioning on Marvelmind"""
 
 import rospy
@@ -11,9 +12,15 @@ from sensor_msgs.msg import Imu
 from marvelmind import MarvelmindHedge
 import types
 
-BCN_OFFSET= 2.70526 #Reference frame offset in rad
+DRONE_READING = 300 #Reading from the drone yaw angle when facing anchor 10
+BCN_OFFSET = None #Reference frame offset in rad
 
 imu_data = None
+
+def set_bcn_offset_from_yaw():
+    global BCN_OFFSET
+    drone_offset_deg = (360-DRONE_READING)+90
+    BCN_OFFSET = drone_offset_deg * (np.pi/180)
 
 def imu_data_callback(data):
     global imu_data
@@ -23,6 +30,8 @@ def send_vision_position_estimate(pub, pos):
     pub.publish(pos)
 
 def positioning_pub():
+    set_bcn_offset_from_yaw()
+    print(BCN_OFFSET)
     pose_pub = rospy.Publisher('/mavros/vision_pose/pose', PoseStamped, queue_size=1)
     rospy.init_node('positioning_pub', anonymous=True)
     #Subscribe to get attitude
