@@ -25,13 +25,13 @@ def publisher_thread(obj, publisher, rate, fly_time=0):
     print("Iterations: ", iterations)
     while count<iterations:
         publisher.publish(obj)
-        if(count==iterations/(1/5)):#8s
+        if(count==iterations/(1/5)):#4s
             setpoint.pose.position.x -= 1.5
-        if(count==iterations/(2/5)):#12s
+        if(count==iterations/(2/5)):#8s
             setpoint.pose.position.y -= 1.5
-        if(count==iterations/(3/5):#16s
+        if(count==iterations/(3/5):#12s
             setpoint.pose.position.x += 1.5
-        if(count==iterations/(4/5):#20s
+        if(count==iterations/(4/5):#16s
             setpoint.pose.position.y += 1.5
         r.sleep()
         count += 1
