@@ -5,8 +5,8 @@ import numpy as np
 def local_to_ned(points, angle_rad):
     tmp = np.zeros([len(points), 4])
     for i, point in enumerate(points):
-        n = point[1] * np.cos(angle_rad) + point[0] * np.sin(angle_rad)
-        e = (-point[1] * np.sin(angle_rad) + point[0] * np.cos(angle_rad))
+        n = point[0] * np.cos(angle_rad) - point[1] * np.sin(angle_rad)
+        e = -(point[0] * np.sin(angle_rad) + point[1] * np.cos(angle_rad))
         d = -point[2]
         tmp[i] = np.array([n,e,d,point[3]])
     return tmp

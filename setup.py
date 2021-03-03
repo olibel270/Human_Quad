@@ -2,6 +2,7 @@ import socket
 import re
 import subprocess
 import os
+import configparser
 
 PIXHAWK_HOSTNAME = "192.168.0.111"
 
@@ -43,5 +44,14 @@ new_file_contents = "".join(string_list)
 my_file = open(launchfile_path, "w")
 my_file.write(new_file_contents)
 my_file.close()
+
+reading = input("What's the angle displayed when the drone points from anchor 12 to 10?")
+
+configfile = open('config.ini','r')
+lines = configfile.readlines()
+for line in lines:
+    if line.startswith("local_ned_offset_rad"):
+        line = "local_ned_offset_rad = 
+print(lines)
 
 print('Setup complete. Please run "roslaunch mavros px4.launch"')
