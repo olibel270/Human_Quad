@@ -109,8 +109,7 @@ if __name__ == "__main__":
     # Parse Config
     config = configparser.ConfigParser()
     config.read('../config.ini')
-
     MAP_TO_DRONE_RAD = float(config['hardware_setup']['local_ned_offset_rad'])
-    
+    print(MAP_TO_DRONE_RAD)
     # Perform Test
     local_to_ned_test()
