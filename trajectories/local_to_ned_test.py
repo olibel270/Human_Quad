@@ -10,7 +10,7 @@ import numpy as np
 from geometry_msgs.msg import PoseStamped
 from mavros_msgs.srv import SetMode, CommandBool
 from std_msgs.msg import Header
-from transform_functions import local_to_ned
+from transform_functions import array_to_setpoints
 
 current_pose = PoseStamped()
 MAP_TO_DRONE_RAD = 0
@@ -50,23 +50,17 @@ def publisher_thread(setpoints, publisher, rate, fly_time=0):
         r.sleep()
         count += 1
 
-def define_drone_setpoints(local_setpoints):
+def define_drone_setpoints(starting_setpoint):
     # Define local setpoint coordinates
-    local_setpoint_coords = np.array([[0,-2,1,0],[1.5,-2,1,0],[1.5,-0.5,1,0],[0,-0.5,1,0],[0,-2,1,0]])
-    # Get equivalent NED setpoint coordinates
-    setpoints_ned_coords = local_to_ned(local_setpoint_coords, MAP_TO_DRONE_RAD)
-    # assign to setpoint objects 
-    tmp = []
-    for i,setpoint in enumerate(local_setpoints):
-        if (i==0):
-            tmp.append(local_setpoints[i])
-            continue
-        tmp.append(PoseStamped())
-        tmp[i].pose.position.x = setpoints_ned_coords[i-1][0]
-        tmp[i].pose.position.y = setpoints_ned_coords[i-1][1]
-        # Set Z height
-        tmp[i].pose.position.z = local_setpoints[0].pose.position.z
-        # Set orientation
+    new_setpoints_coords = np.array([[0,-2,1,180],[1.5,-2,1,180],[1.5,-0.5,1,180],[0,-0.5,1,180],[0,-2,1,180]])
+    new_setpoints = array_to_setpoints(new_setpoints_coords)
+    tmp = [PoseStamped()] * (1+len(new_setpoints_coords))
+    for i,setpoint in enumerate(tmp):
+        if(i==0):
+            tmp[i] = starting_setpoint
+        else:
+            tmp[i] = new_setpoints[i-1]
+            tmp[i].pose.position.z = tmp[0].pose.position.z
     return tmp
 
 def local_to_ned_test():
@@ -78,38 +72,33 @@ def local_to_ned_test():
     rospy.Subscriber("/mavros/local_position/pose", PoseStamped, pose_data_callback)
     rospy.sleep(1)
     r = rospy.Rate(5)
-    setpoints = [PoseStamped()] * 6
+    setpoint_start = PoseStamped()
 
     #Set Takeoff Point
-    setpoints[0] = current_pose 
-    setpoints[0].header = Header()
-    setpoints[0].header.stamp = rospy.Time.now()
-    setpoints[0].pose.position.z += 1
+    setpoint_start = current_pose 
+    setpoint_start.header = Header()
+    setpoint_start.header.stamp = rospy.Time.now()
+    setpoint_start.pose.position.z += 1
 
     # Transform all setpoints to drone coordinates
-    setpoints = define_drone_setpoints(setpoints)
+    setpoints = define_drone_setpoints(setpoint_start)
     print(setpoints)
-#    #ARM
-#    arm_service(True)
-#    print("REQUEST ARM")
-#
-#    x = threading.Thread(target=publisher_thread, args=(setpoints, setpoint_pub, SETPOINT_FREQ, FLY_TIME))
-#    x.start()
-#    #Set Offboard Mode and fly a square
-#    mode_resp = mode_service(0,"OFFBOARD")
-#    print("SWITCH TO OFFBOARD")
-#    print("TAKEOFF")
-#    x.join()
-#
-#    #Land
-#    mode_service(0, "AUTO.LAND")
-#    print("LANDING")
+    #ARM
+    arm_service(True)
+    print("REQUEST ARM")
+
+    x = threading.Thread(target=publisher_thread, args=(setpoints, setpoint_pub, SETPOINT_FREQ, FLY_TIME))
+    x.start()
+    #Set Offboard Mode and fly a square
+    mode_resp = mode_service(0,"OFFBOARD")
+    print("SWITCH TO OFFBOARD")
+    print("TAKEOFF")
+    x.join()
+
+    #Land
+    mode_service(0, "AUTO.LAND")
+    print("LANDING")
 
 if __name__ == "__main__":
-    # Parse Config
-    config = configparser.ConfigParser()
-    config.read('../config.ini')
-    MAP_TO_DRONE_RAD = float(config['hardware_setup']['local_ned_offset_rad'])
-    print(MAP_TO_DRONE_RAD)
     # Perform Test
     local_to_ned_test()
