@@ -19,7 +19,7 @@ imu_data = None
 
 def set_bcn_offset_from_yaw():
     global BCN_OFFSET
-    drone_offset_deg = (360-DRONE_READING)+90
+    drone_offset_deg = (360-DRONE_READING)
     BCN_OFFSET = drone_offset_deg * (np.pi/180)
 
 def imu_data_callback(data):
@@ -39,7 +39,7 @@ def positioning_pub():
 
     pose = PoseStamped()
 
-    hedge = MarvelmindHedge(tty = "/dev/ttyACM1", adr=None, debug=False) # create MarvelmindHedge thread
+    hedge = MarvelmindHedge(tty = "/dev/ttyACM0", adr=None, debug=False) # create MarvelmindHedge thread
     if (len(sys.argv)>1):
         hedge.tty= sys.argv[1]
     hedge.start()
@@ -57,10 +57,10 @@ def positioning_pub():
 
             pose.header = Header()
             pose.header.stamp = rospy.Time.now()
-            temp_x = position[2]
-            temp_y = position[1]
-            pose.pose.position.x = (temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
-            pose.pose.position.y = -(-temp_x*np.cos(BCN_OFFSET)+temp_y*np.sin(BCN_OFFSET))
+            temp_x = position[1]
+            temp_y = position[2]
+            pose.pose.position.y = (temp_x*np.cos(BCN_OFFSET)-temp_y*np.sin(BCN_OFFSET))
+            pose.pose.position.x = -(temp_x*np.sin(BCN_OFFSET)+temp_y*np.cos(BCN_OFFSET))
             pose.pose.position.z = -position[3]
 
             pose.pose.orientation = Quaternion(

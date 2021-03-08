@@ -2,6 +2,7 @@ import socket
 import re
 import subprocess
 import os
+import configparser
 
 PIXHAWK_HOSTNAME = "192.168.0.111"
 
