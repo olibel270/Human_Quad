@@ -15,7 +15,7 @@ from path_functions import circle_waypoints
 
 current_pose = PoseStamped()
 MAP_TO_DRONE_RAD = 0
-FLY_TIME = 22 #60s total fly time for the test. Should be setpoint distance based, but good for now + it's just a test
+FLY_TIME = 22 
 SETPOINT_FREQ = 5
 
 def pose_data_callback(pose):
@@ -36,28 +36,28 @@ def publisher_thread(setpoints, publisher, rate, fly_time=0):
             setpoint = setpoints[1]
             print("Performing CIRCLE!")
             print("To Setpoint 1")
-        if(count==iterations*(8/22)):#12s
+        if(count==iterations*(8/22)):
             setpoint = setpoints[2] 
             print("To Setpoint 2")
-        if(count==iterations*(10/22)):#18s
+        if(count==iterations*(10/22)):
             setpoint = setpoints[3]
             print("To Setpoint 3")
-        if(count==iterations*(12/22)):#24s
+        if(count==iterations*(12/22)):
             setpoint = setpoints[4]
             print("To Setpoint 4")
-        if(count==iterations*(14/22)):#30s
+        if(count==iterations*(14/22)):
             setpoint = setpoints[5]
             print("To Setpoint 5")
-        if(count==iterations*(16/22)):#36s
+        if(count==iterations*(16/22)):
             setpoint = setpoints[6]
             print("To Setpoint 6")
-        if(count==iterations*(18/22)):#42s
+        if(count==iterations*(18/22)):
             setpoint = setpoints[7]
             print("To Setpoint 7")
-        if(count==iterations*(20/22)):#48s
+        if(count==iterations*(20/22)):
             setpoint = setpoints[8]
             print("To Setpoint 8")
-        if(count==iterations*(22/22)):#54s
+        if(count==iterations*(22/22)):
             setpoint = setpoints[9]
             print("To Setpoint 9")
         r.sleep()
@@ -66,6 +66,7 @@ def publisher_thread(setpoints, publisher, rate, fly_time=0):
 def define_drone_setpoints(starting_setpoint):
     # Define local setpoint coordinates
     new_setpoints_coords = circle_waypoints(np.array([0,-1,1.5,1,180]),1)
+    print(new_setpoints_coords)
     new_setpoints = array_to_setpoints(new_setpoints_coords)
     tmp = [PoseStamped()] * (1+len(new_setpoints_coords))
     for i,setpoint in enumerate(tmp):
@@ -97,16 +98,16 @@ def local_to_ned_test():
     setpoints = define_drone_setpoints(setpoint_start)
     print(setpoints)
     #ARM
-    arm_service(True)
-    print("REQUEST ARM")
-
-    x = threading.Thread(target=publisher_thread, args=(setpoints, setpoint_pub, SETPOINT_FREQ, FLY_TIME))
-    x.start()
-    #Set Offboard Mode and fly a square
-    mode_resp = mode_service(0,"OFFBOARD")
-    print("SWITCH TO OFFBOARD")
-    print("TAKEOFF")
-    x.join()
+#    arm_service(True)
+#    print("REQUEST ARM")
+#
+#    x = threading.Thread(target=publisher_thread, args=(setpoints, setpoint_pub, SETPOINT_FREQ, FLY_TIME))
+#    x.start()
+#    #Set Offboard Mode and fly a square
+#    mode_resp = mode_service(0,"OFFBOARD")
+#    print("SWITCH TO OFFBOARD")
+#    print("TAKEOFF")
+#    x.join()
 
     #Land
     #mode_service(0, "AUTO.LAND")
