@@ -16,7 +16,8 @@ def local_to_ned(points):
         n = point[0] * np.cos(angle_rad) - point[1] * np.sin(angle_rad)
         e = -(point[0] * np.sin(angle_rad) + point[1] * np.cos(angle_rad))
         d = -point[2]
-        yaw = point[3]*np.pi/180 + get_map_to_drone_rad()
+        temp_yaw = (point[3]+90)*np.pi/180 + get_map_to_drone_rad()
+        yaw = normalize_yaw(temp_yaw)
         tmp[i] = np.array([n,e,d,yaw])
     return tmp
 
@@ -40,3 +41,10 @@ def array_to_setpoints(array):
         setpoints_array[i].pose.position.z = ned_array[i][2]
         setpoints_array[i].pose.orientation = quaternion_from_rad_yaw(ned_array[i][3])
     return setpoints_array
+
+def normalize_yaw(yaw):
+    if(yaw>2*np.pi):
+        yaw -= 2*np.pi
+    if(yaw<-2*np.pi):
+        yaw += 2*ni.pi
+    return yaw
