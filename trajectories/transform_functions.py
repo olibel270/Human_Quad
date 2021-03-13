@@ -29,6 +29,13 @@ def quaternion_from_rad_yaw(yaw_in_rads):
     quaternion.z = np.sin(yaw_in_rads/2)
     return quaternion
 
+def yaw_rad_from_quaternion(quaternion):
+    w = quaternion.w
+    x = quaternion.x
+    y = quaternion.y
+    z = quaternion.z
+    return np.arctan2(2*(w*z + x*y), 1-2*(y*y + z*z));
+
 # Input: nx4 numpy array [x,y,z,yaw(degrees)]
 # Output: nx1 array of geomtry_msgs.msg.PoseStamped
 def array_to_setpoints(array):
