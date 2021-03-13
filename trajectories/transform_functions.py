@@ -21,6 +21,13 @@ def local_to_ned(points):
         tmp[i] = np.array([n,e,d,yaw])
     return tmp
 
+def ned_to_xyz(n,e,d):
+    angle_rad = -get_map_to_drone_rad()
+    y = -(n*np.cos(angle_rad)-e*np.sin(angle_rad))
+    x = (n*np.sin(angle_rad) + e*np.cos(angle_rad))
+    z = -d
+    return (x,y,z)
+
 def quaternion_from_rad_yaw(yaw_in_rads):
     quaternion = Quaternion()
     quaternion.w = np.cos(yaw_in_rads/2)
