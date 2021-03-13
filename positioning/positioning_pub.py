@@ -12,7 +12,7 @@ from sensor_msgs.msg import Imu
 from marvelmind import MarvelmindHedge
 import types
 
-DRONE_READING = 300 #Reading from the drone yaw angle when facing anchor 10
+DRONE_READING = 303 #Reading from the drone yaw angle when facing anchor 10
 BCN_OFFSET = None #Reference frame offset in rad
 
 imu_data = None
@@ -71,8 +71,9 @@ def positioning_pub():
             pose_pub.publish(pose)
 
         except KeyboardInterrupt:
-            hedge.stop()  # stop and close serial port
+            hedge.stop() #Close serial port
             sys.exit()
 
 if __name__ == "__main__":
     positioning_pub()
+

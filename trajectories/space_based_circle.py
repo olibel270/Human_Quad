@@ -11,7 +11,7 @@ from geometry_msgs.msg import PoseStamped
 from mavros_msgs.srv import SetMode, CommandBool
 from std_msgs.msg import Header
 from transform_functions import array_to_setpoints
-from path_functions import circle_waypoints
+from path_functions import circle_waypoints, setpoint_reached
 
 current_pose = PoseStamped()
 MAP_TO_DRONE_RAD = 0
@@ -29,43 +29,23 @@ def publisher_thread(setpoints, publisher, rate, fly_time=0):
         iterations = fly_time / (r.sleep_dur.secs + r.sleep_dur.nsecs/1e9)
     else:
         iterations = 5 / (r.sleep_dur.secs + r.sleep_dur.nsecs/1e9)
-    count = 0
-    while count<iterations:
+    i=0
+    done=False
+    while not done:
+        if(setpoint_reached(setpoints[i], current_pose, accuracy_pose=0.5)):
+            i+=1
+            if(i>=len(setpoints)):
+                done = True
+                continue
+            print("To setpoint: " + str(i))
+            setpoint = setpoints[i]
         publisher.publish(setpoint)
-        if(count==iterations/22*6):#6s
-            setpoint = setpoints[1]
-            print("Performing CIRCLE!")
-            print("To Setpoint 1")
-        if(count==iterations*(8/22)):
-            setpoint = setpoints[2] 
-            print("To Setpoint 2")
-        if(count==iterations*(10/22)):
-            setpoint = setpoints[3]
-            print("To Setpoint 3")
-        if(count==iterations/22*12):
-            setpoint = setpoints[4]
-            print("To Setpoint 4")
-        if(count==iterations/22*14):
-            setpoint = setpoints[5]
-            print("To Setpoint 5")
-        if(count==iterations*(16/22)):
-            setpoint = setpoints[6]
-            print("To Setpoint 6")
-        if(count==iterations*(18/22)):
-            setpoint = setpoints[7]
-            print("To Setpoint 7")
-        if(count==iterations*(20/22)):
-            setpoint = setpoints[8]
-            print("To Setpoint 8")
-        if(count==iterations*(22/22)):
-            setpoint = setpoints[9]
-            print("To Setpoint 9")
         r.sleep()
-        count += 1
+    return
 
 def define_drone_setpoints(starting_setpoint):
     # Define local setpoint coordinates
-    new_setpoints_coords = circle_waypoints(np.array([0,-1,1.5,180]),1)
+    new_setpoints_coords = circle_waypoints(np.array([0,-1,1,180]),1,number_of_turns=3, waypoints_per_turn=32)
     new_setpoints = array_to_setpoints(new_setpoints_coords)
     tmp = [PoseStamped()] * (1+len(new_setpoints_coords))
     for i,setpoint in enumerate(tmp):
