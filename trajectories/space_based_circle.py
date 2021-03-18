@@ -32,7 +32,15 @@ def publisher_thread(setpoints, publisher, rate, fly_time=0):
     i=0
     done=False
     while not done:
-        if(setpoint_reached(setpoints[i], current_pose, accuracy_pose=0.5)):
+        if(setpoint_reached(setpoints[i], current_pose, accuracy_pose=1.2)):
+            if(i==0):
+                for j in range(30):
+                    publisher.publish(setpoints[i])
+                    r.sleep()
+            if(i==32):
+                for j in range(15):
+                    publisher.publish(setpoints[i])
+                    r.sleep()
             i+=1
             if(i>=len(setpoints)):
                 done = True
@@ -45,7 +53,7 @@ def publisher_thread(setpoints, publisher, rate, fly_time=0):
 
 def define_drone_setpoints(starting_setpoint):
     # Define local setpoint coordinates
-    new_setpoints_coords = circle_waypoints(np.array([0,-1,1,180]),1,number_of_turns=3, waypoints_per_turn=32)
+    new_setpoints_coords = circle_waypoints(np.array([0,-1,1,180]),1,number_of_turns=1, waypoints_per_turn=32)
     new_setpoints = array_to_setpoints(new_setpoints_coords)
     tmp = [PoseStamped()] * (1+len(new_setpoints_coords))
     for i,setpoint in enumerate(tmp):
