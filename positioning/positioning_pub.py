@@ -12,7 +12,7 @@ from sensor_msgs.msg import Imu
 from marvelmind import MarvelmindHedge
 import types
 
-DRONE_READING = 303 #Reading from the drone yaw angle when facing anchor 10
+DRONE_READING = 300 #Reading from the drone yaw angle when facing anchor 10
 BCN_OFFSET = None #Reference frame offset in rad
 
 imu_data = None
@@ -39,7 +39,7 @@ def positioning_pub():
 
     pose = PoseStamped()
 
-    hedge = MarvelmindHedge(tty = "/dev/ttyACM0", adr=None, debug=False) # create MarvelmindHedge thread
+    hedge = MarvelmindHedge(tty = "/dev/ttyACM1", adr=None, debug=False) # create MarvelmindHedge thread
     if (len(sys.argv)>1):
         hedge.tty= sys.argv[1]
     hedge.start()
