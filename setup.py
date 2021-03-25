@@ -45,4 +45,4 @@ my_file = open(launchfile_path, "w")
 my_file.write(new_file_contents)
 my_file.close()
 
-print('Setup complete. Please run "roslaunch mavros px4.launch"')
+print('Setup complete. Please run "bash ~/Human_Quad/tmux_launch.sh"')

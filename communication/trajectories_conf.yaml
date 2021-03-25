@@ -1,0 +1,6 @@
+basepath: ../trajectories/
+test: test.py
+approach and hover: approach_and_hover_test.py
+circle: circle_test.py
+helix: helix_test.py
+square: square_trajectory_test.py

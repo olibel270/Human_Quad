@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-"""ROS node that tests local frame setpoint navigation """
-"""IMPORTANT!!!!!! CHECK THE SETPOINT COORDINATES ARE RIGHT BEFORE FLYING!!!!!!!!!!"""
-"""The flying portion was commented out. Uncomment when convinced of transformation accuracy"""
+"""ROS node that performs a helix trajectory"""
+"""The flying portion was commented out. Uncomment when ready to fly"""
 
 import configparser
 import rospy
@@ -11,45 +10,59 @@ from geometry_msgs.msg import PoseStamped
 from mavros_msgs.srv import SetMode, CommandBool
 from std_msgs.msg import Header
 from transform_functions import array_to_setpoints
+from path_functions import helix_waypoints, setpoint_reached
 
 current_pose = PoseStamped()
 MAP_TO_DRONE_RAD = 0
-FLY_TIME = 30 #30s total fly time for the test. Should be setpoint distance based, it's just for a demo
 SETPOINT_FREQ = 5
 
 def pose_data_callback(pose):
     global current_pose
     current_pose = pose
 
-def publisher_thread(setpoints, publisher, rate, fly_time=0):
+def publisher_thread(setpoints, publisher, rate=5): 
     r = rospy.Rate(rate)
     setpoint = setpoints[0]
-    if fly_time != 0:
-        iterations = fly_time / (r.sleep_dur.secs + r.sleep_dur.nsecs/1e9)
-    else:
-        iterations = 5 / (r.sleep_dur.secs + r.sleep_dur.nsecs/1e9)
-    count = 0
-    while count<iterations:
+    i=0
+    done=False
+    while not done:
+        if(setpoint_reached(setpoints[i], current_pose, accuracy_pose=1.5)):
+            if(i==0):   
+                for j in range(20):
+                    publisher.publish(setpoints[i])
+                    r.sleep()
+            if(i==1):
+                for j in range(25):
+                    publisher.publish(setpoints[i])
+                    r.sleep()
+            if(i==2):
+                for j in range(15):
+                    publisher.publish(setpoints[i])
+                    r.sleep()
+            if(i==3):
+                for j in range(15):
+                    publisher.publish(setpoints[i])
+                    r.sleep()
+            if(i==35):
+                for j in range(15):
+                    publisher.publish(setpoints[i])
+                    r.sleep()
+            i+=1
+            if(i>=len(setpoints)):
+                done = True
+                continue
+            print("To setpoint: " + str(i))
+            setpoint = setpoints[i]
         publisher.publish(setpoint)
-        if(count==iterations*(1/6)):#5s
-            setpoint = setpoints[1]
-            print("Performing APPROACH AND HOVER!")
-            print("To Setpoint 1")
-            print(setpoint.pose.position.z)
-        if(count==iterations*(2/6)):#10s
-            setpoint = setpoints[2] 
-            print("To Setpoint 2")
-            print(setpoint.pose.position.z)
-        if(count==iterations*(5/6)):#25s
-            setpoint = setpoints[3]
-            print("To Setpoint 3")
-            print(setpoint.pose.position.z)
         r.sleep()
-        count += 1
+    return
 
 def define_drone_setpoints(starting_setpoint):
     # Define local setpoint coordinates
-    new_setpoints_coords = np.array([[2,-1,-3.5,180],[-2,-1,-0.8,180],[1.5,-1,-1,0]])
+    avoidance_waypoints = np.array([[2.5,-1,-1,15],[2.5,-1,-2,15],[1.5,-1,-1.3,15]])
+    new_setpoints_coords = helix_waypoints(np.array([0,-1,1,180]),1,-1.3,-4.8,number_of_turns=1, waypoints_per_turn=32)
+    new_setpoints_coords = np.append(avoidance_waypoints,new_setpoints_coords,axis=0)
+    print(new_setpoints_coords)
     new_setpoints = array_to_setpoints(new_setpoints_coords)
     tmp = [PoseStamped()] * (1+len(new_setpoints_coords))
     for i,setpoint in enumerate(tmp):
@@ -59,7 +72,7 @@ def define_drone_setpoints(starting_setpoint):
             tmp[i] = new_setpoints[i-1]
     return tmp
 
-def local_to_ned_test():
+def helix_test():
     setpoint_pub = rospy.Publisher('/mavros/setpoint_position/local', PoseStamped, queue_size=1)
     arm_service = rospy.ServiceProxy('/mavros/cmd/arming', CommandBool)
     mode_service = rospy.ServiceProxy('/mavros/set_mode', SetMode)
@@ -78,11 +91,12 @@ def local_to_ned_test():
 
     # Transform all setpoints to drone coordinates
     setpoints = define_drone_setpoints(setpoint_start)
+#    print(setpoints)
     #ARM
     arm_service(True)
     print("REQUEST ARM")
 
-    x = threading.Thread(target=publisher_thread, args=(setpoints, setpoint_pub, SETPOINT_FREQ, FLY_TIME))
+    x = threading.Thread(target=publisher_thread, args=(setpoints, setpoint_pub, SETPOINT_FREQ))
     x.start()
     #Set Offboard Mode and fly a square
     mode_resp = mode_service(0,"OFFBOARD")
@@ -96,4 +110,4 @@ def local_to_ned_test():
 
 if __name__ == "__main__":
     # Perform Test
-    local_to_ned_test()
+    helix_test()

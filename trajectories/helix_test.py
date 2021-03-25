@@ -23,19 +23,15 @@ def pose_data_callback(pose):
 def publisher_thread(setpoints, publisher, rate=5): 
     r = rospy.Rate(rate)
     setpoint = setpoints[0]
-    if fly_time != 0:
-        iterations = fly_time / (r.sleep_dur.secs + r.sleep_dur.nsecs/1e9)
-    else:
-        iterations = 5 / (r.sleep_dur.secs + r.sleep_dur.nsecs/1e9)
     i=0
     done=False
     while not done:
-        if(setpoint_reached(setpoints[i], current_pose, accuracy_pose=1.2)):
+        if(setpoint_reached(setpoints[i], current_pose, accuracy_pose=1.5)):
             if(i==0):   
                 for j in range(30):
                     publisher.publish(setpoints[i])
                     r.sleep()
-            if(i==32):
+            if(i==33):
                 for j in range(15):
                     publisher.publish(setpoints[i])
                     r.sleep()
@@ -51,7 +47,7 @@ def publisher_thread(setpoints, publisher, rate=5):
 
 def define_drone_setpoints(starting_setpoint):
     # Define local setpoint coordinates
-    new_setpoints_coords = helix_waypoints(np.array([0,-1,1,180]),1,1,2,number_of_turns=1, waypoints_per_turn=32)
+    new_setpoints_coords = helix_waypoints(np.array([0,-1,1,180]),1,-1.3,-4.8,number_of_turns=1, waypoints_per_turn=32)
     print(new_setpoints_coords)
     new_setpoints = array_to_setpoints(new_setpoints_coords)
     tmp = [PoseStamped()] * (1+len(new_setpoints_coords))
@@ -82,21 +78,21 @@ def helix_test():
     # Transform all setpoints to drone coordinates
     setpoints = define_drone_setpoints(setpoint_start)
     print(setpoints)
-    ##ARM
-    #arm_service(True)
-    #print("REQUEST ARM")
-#
-#    x = threading.Thread(target=publisher_thread, args=(setpoints, setpoint_pub, SETPOINT_FREQ, FLY_TIME))
-#    x.start()
-#    #Set Offboard Mode and fly a square
-#    mode_resp = mode_service(0,"OFFBOARD")
-#    print("SWITCH TO OFFBOARD")
-#    print("TAKEOFF")
-#    x.join()
-#
-#    #Land
-#    mode_service(0, "AUTO.LAND")
-#    print("LANDING")
+    #ARM
+    arm_service(True)
+    print("REQUEST ARM")
+
+    x = threading.Thread(target=publisher_thread, args=(setpoints, setpoint_pub, SETPOINT_FREQ))
+    x.start()
+    #Set Offboard Mode and fly a square
+    mode_resp = mode_service(0,"OFFBOARD")
+    print("SWITCH TO OFFBOARD")
+    print("TAKEOFF")
+    x.join()
+
+    #Land
+    mode_service(0, "AUTO.LAND")
+    print("LANDING")
 
 if __name__ == "__main__":
     # Perform Test

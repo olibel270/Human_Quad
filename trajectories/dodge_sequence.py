@@ -14,7 +14,7 @@ from transform_functions import array_to_setpoints
 
 current_pose = PoseStamped()
 MAP_TO_DRONE_RAD = 0
-FLY_TIME = 30 #30s total fly time for the test. Should be setpoint distance based, it's just for a demo
+FLY_TIME = 27 #24s total fly time for the test. Should be setpoint distance based, but good for now + it's just a test
 SETPOINT_FREQ = 5
 
 def pose_data_callback(pose):
@@ -29,27 +29,34 @@ def publisher_thread(setpoints, publisher, rate, fly_time=0):
     else:
         iterations = 5 / (r.sleep_dur.secs + r.sleep_dur.nsecs/1e9)
     count = 0
+    print("iter_len: ", iterations)
     while count<iterations:
         publisher.publish(setpoint)
-        if(count==iterations*(1/6)):#5s
+        if(count==20):#4s
             setpoint = setpoints[1]
-            print("Performing APPROACH AND HOVER!")
-            print("To Setpoint 1")
-            print(setpoint.pose.position.z)
-        if(count==iterations*(2/6)):#10s
+            print("Performing Dodge")
+            print("To Prep")
+            print(setpoints[1])
+        if(count==40):#8s
             setpoint = setpoints[2] 
-            print("To Setpoint 2")
-            print(setpoint.pose.position.z)
-        if(count==iterations*(5/6)):#25s
+            print("Dart")
+            print(setpoints[2])
+        if(count==50):#12s
             setpoint = setpoints[3]
-            print("To Setpoint 3")
-            print(setpoint.pose.position.z)
+            print("Turn Around")
+            print(setpoints[3])
+        if(count==80):#16s
+            setpoint = setpoints[4]
+            print("Second Prep")
+        if(count==100):#16s
+            setpoint = setpoints[5]
+            print("Second Dart")
         r.sleep()
         count += 1
 
 def define_drone_setpoints(starting_setpoint):
     # Define local setpoint coordinates
-    new_setpoints_coords = np.array([[2,-1,-3.5,180],[-2,-1,-0.8,180],[1.5,-1,-1,0]])
+    new_setpoints_coords = np.array([[3.5,-1,1,180],[-3,-1,1,180],[-3,-1,1,15],[-3,-3,1,15],[2.5,-1,1,15]])
     new_setpoints = array_to_setpoints(new_setpoints_coords)
     tmp = [PoseStamped()] * (1+len(new_setpoints_coords))
     for i,setpoint in enumerate(tmp):
@@ -57,6 +64,7 @@ def define_drone_setpoints(starting_setpoint):
             tmp[i] = starting_setpoint
         else:
             tmp[i] = new_setpoints[i-1]
+            tmp[i].pose.position.z = tmp[0].pose.position.z
     return tmp
 
 def local_to_ned_test():

@@ -39,7 +39,7 @@ def positioning_pub():
 
     pose = PoseStamped()
 
-    hedge = MarvelmindHedge(tty = "/dev/ttyACM1", adr=None, debug=False) # create MarvelmindHedge thread
+    hedge = MarvelmindHedge(tty = "/dev/ttyACM0", adr=None, debug=False) # create MarvelmindHedge thread
     if (len(sys.argv)>1):
         hedge.tty= sys.argv[1]
     hedge.start()
