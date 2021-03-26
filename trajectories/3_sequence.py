@@ -28,30 +28,36 @@ def publisher_thread(setpoints, publisher, rate=5):
     while not done:
         if(setpoint_reached(setpoints[i], current_pose, accuracy_pose=1.5)):
             if(i==0):   
+                print("takeoff")
                 for j in range(20):
                     publisher.publish(setpoints[i])
                     r.sleep()
             if(i==1):
+                print("getting in position")
                 for j in range(25):
                     publisher.publish(setpoints[i])
                     r.sleep()
             if(i==2):
-                for j in range(15):
+                print("going up")
+                for j in range(5):
                     publisher.publish(setpoints[i])
                     r.sleep()
             if(i==3):
-                for j in range(15):
+                print("go above, then start helix")
+                for j in range(10):
                     publisher.publish(setpoints[i])
                     r.sleep()
+            if(i==4):
+                print("start_helix")
             if(i==35):
-                for j in range(15):
+                print("end of helix")
+                for j in range(25):
                     publisher.publish(setpoints[i])
                     r.sleep()
             i+=1
             if(i>=len(setpoints)):
                 done = True
                 continue
-            print("To setpoint: " + str(i))
             setpoint = setpoints[i]
         publisher.publish(setpoint)
         r.sleep()
@@ -59,8 +65,8 @@ def publisher_thread(setpoints, publisher, rate=5):
 
 def define_drone_setpoints(starting_setpoint):
     # Define local setpoint coordinates
-    avoidance_waypoints = np.array([[2.5,-1,-1,15],[2.5,-1,-2,15],[1.5,-1,-1.3,15]])
-    new_setpoints_coords = helix_waypoints(np.array([0,-1,1,180]),1,-1.3,-4.8,number_of_turns=1, waypoints_per_turn=32)
+    avoidance_waypoints = np.array([[2.5,-1,-1,15],[2.5,-1,-2,15],[1.1,-1,-2,15]])
+    new_setpoints_coords = helix_waypoints(np.array([0,-1,1,180]),1,-1,-5,number_of_turns=1, waypoints_per_turn=32)
     new_setpoints_coords = np.append(avoidance_waypoints,new_setpoints_coords,axis=0)
     print(new_setpoints_coords)
     new_setpoints = array_to_setpoints(new_setpoints_coords)
@@ -93,19 +99,19 @@ def helix_test():
     setpoints = define_drone_setpoints(setpoint_start)
 #    print(setpoints)
     #ARM
-    arm_service(True)
+#    arm_service(True)
     print("REQUEST ARM")
 
     x = threading.Thread(target=publisher_thread, args=(setpoints, setpoint_pub, SETPOINT_FREQ))
     x.start()
     #Set Offboard Mode and fly a square
-    mode_resp = mode_service(0,"OFFBOARD")
+#    mode_resp = mode_service(0,"OFFBOARD")
     print("SWITCH TO OFFBOARD")
     print("TAKEOFF")
     x.join()
 
     #Land
-    mode_service(0, "AUTO.LAND")
+#    mode_service(0, "AUTO.LAND")
     print("LANDING")
 
 if __name__ == "__main__":
