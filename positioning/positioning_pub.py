@@ -12,68 +12,81 @@ from sensor_msgs.msg import Imu
 from marvelmind import MarvelmindHedge
 import types
 
-DRONE_READING = 300 #Reading from the drone yaw angle when facing anchor 10
+DRONE_READING = 310 #Reading from the drone yaw angle when facing anchor 10
 BCN_OFFSET = None #Reference frame offset in rad
 
 imu_data = None
 
-def set_bcn_offset_from_yaw():
-    global BCN_OFFSET
-    drone_offset_deg = (360-DRONE_READING)
-    BCN_OFFSET = drone_offset_deg * (np.pi/180)
+class SingletonMeta(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(SingletonMeta,cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
-def imu_data_callback(data):
-    global imu_data
-    imu_data = data
+class PositionPub(metaclass=SingletonMeta):
 
-def send_vision_position_estimate(pub, pos):
-    pub.publish(pos)
+    def __init__(self):
+        self.hedge = None
 
-def positioning_pub():
-    set_bcn_offset_from_yaw()
-    print(BCN_OFFSET)
-    pose_pub = rospy.Publisher('/mavros/vision_pose/pose', PoseStamped, queue_size=1)
-    rospy.init_node('positioning_pub', anonymous=True)
-    #Subscribe to get attitude
-    rospy.Subscriber("/mavros/imu/data", Imu, imu_data_callback)
-
-    pose = PoseStamped()
-
-    hedge = MarvelmindHedge(tty = "/dev/ttyACM0", adr=None, debug=False) # create MarvelmindHedge thread
-    if (len(sys.argv)>1):
-        hedge.tty= sys.argv[1]
-    hedge.start()
-
-    rospy.sleep(1) # let data show up in subs
-    while not rospy.is_shutdown():
-        try:
-            hedge.dataEvent.wait()
-            hedge.dataEvent.clear()#get coordinates
-
-            if (hedge.positionUpdated):
-                position = hedge.position()
-            else:
-                continue
-
-            pose.header = Header()
-            pose.header.stamp = rospy.Time.now()
-            temp_x = position[1]
-            temp_y = position[2]
-            pose.pose.position.y = (temp_x*np.cos(BCN_OFFSET)-temp_y*np.sin(BCN_OFFSET))
-            pose.pose.position.x = -(temp_x*np.sin(BCN_OFFSET)+temp_y*np.cos(BCN_OFFSET))
-            pose.pose.position.z = -position[3]
-
-            pose.pose.orientation = Quaternion(
-        	imu_data.orientation.x,
-                imu_data.orientation.y,
-                imu_data.orientation.z,
-                imu_data.orientation.w)
-            pose_pub.publish(pose)
-
-        except KeyboardInterrupt:
-            hedge.stop() #Close serial port
-            sys.exit()
-
+    def set_bcn_offset_from_yaw(self):
+        global BCN_OFFSET
+        drone_offset_deg = (360-DRONE_READING)
+        BCN_OFFSET = drone_offset_deg * (np.pi/180)
+    
+    def imu_data_callback(self, data):
+        global imu_data
+        imu_data = data
+    
+    def send_vision_position_estimate(self, pub, pos):
+        pub.publish(pos)
+    
+    def positioning_pub(self):
+        self.set_bcn_offset_from_yaw()
+        print(BCN_OFFSET)
+        pose_pub = rospy.Publisher('/mavros/vision_pose/pose', PoseStamped, queue_size=1)
+        rospy.init_node('positioning_pub', anonymous=True)
+        #Subscribe to get attitude
+        rospy.Subscriber("/mavros/imu/data", Imu, self.imu_data_callback)
+    
+        pose = PoseStamped()
+    
+        self.hedge = MarvelmindHedge(tty = "/dev/ttyACM0", adr=None, debug=False) # create MarvelmindHedge thread
+        if (len(sys.argv)>1):
+            self.hedge.tty= sys.argv[1]
+        self.hedge.start()
+    
+        rospy.sleep(1) # let data show up in subs
+        while not rospy.is_shutdown():
+            try:
+                self.hedge.dataEvent.wait()
+                self.hedge.dataEvent.clear()#get coordinates
+    
+                if (self.hedge.positionUpdated):
+                    position = self.hedge.position()
+                else:
+                    continue
+    
+                pose.header = Header()
+                pose.header.stamp = rospy.Time.now()
+                temp_x = position[1]
+                temp_y = position[2]
+                pose.pose.position.y = (temp_x*np.cos(BCN_OFFSET)-temp_y*np.sin(BCN_OFFSET))
+                pose.pose.position.x = -(temp_x*np.sin(BCN_OFFSET)+temp_y*np.cos(BCN_OFFSET))
+                pose.pose.position.z = -position[3]
+    
+                pose.pose.orientation = Quaternion(
+            	imu_data.orientation.x,
+                    imu_data.orientation.y,
+                    imu_data.orientation.z,
+                    imu_data.orientation.w)
+                pose_pub.publish(pose)
+    
+            except KeyboardInterrupt:
+                self.hedge.stop() #Close serial port
+                sys.exit()
+    
 if __name__ == "__main__":
-    positioning_pub()
+    position_pub = PositionPub()
+    position_pub.positioning_pub()
 

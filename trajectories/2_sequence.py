@@ -56,7 +56,7 @@ def publisher_thread(setpoints, publisher, rate, fly_time=0):
 
 def define_drone_setpoints(starting_setpoint):
     # Define local setpoint coordinates
-    new_setpoints_coords = np.array([[3.5,-1,1,180],[-3,-1,1,180],[-3,-1,1,15],[-3,-3,1,15],[2.5,-1,1,15]])
+    new_setpoints_coords = np.array([[3,-1,1,180],[-3,-1,1,180],[-3,-1,1,15],[-3,-2.5,1,15],[2.5,-1,1,15]])
     new_setpoints = array_to_setpoints(new_setpoints_coords)
     tmp = [PoseStamped()] * (1+len(new_setpoints_coords))
     for i,setpoint in enumerate(tmp):

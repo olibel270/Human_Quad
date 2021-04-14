@@ -48,7 +48,7 @@ def publisher_thread(setpoints, publisher, rate, fly_time=0):
 
 def define_drone_setpoints(starting_setpoint):
     # Define local setpoint coordinates
-    new_setpoints_coords = np.array([[2,-1,-5,180],[-2,-1,-0.8,180],[1,-1,-2,0]])
+    new_setpoints_coords = np.array([[2,-1,-4,180],[-2,-1,-0.8,180],[1,-1,-2,0]])
     new_setpoints = array_to_setpoints(new_setpoints_coords)
     tmp = [PoseStamped()] * (1+len(new_setpoints_coords))
     for i,setpoint in enumerate(tmp):
@@ -78,19 +78,19 @@ def local_to_ned_test():
     # Transform all setpoints to drone coordinates
     setpoints = define_drone_setpoints(setpoint_start)
     #ARM
-#    arm_service(True)
+    arm_service(True)
     print("REQUEST ARM")
 
     x = threading.Thread(target=publisher_thread, args=(setpoints, setpoint_pub, SETPOINT_FREQ, FLY_TIME))
     x.start()
     #Set Offboard Mode and fly a square
-#    mode_resp = mode_service(0,"OFFBOARD")
+    mode_resp = mode_service(0,"OFFBOARD")
     print("SWITCH TO OFFBOARD")
     print("TAKEOFF")
     x.join()
 
     #Land
-#    mode_service(0, "AUTO.LAND")
+    mode_service(0, "AUTO.LAND")
     print("LANDING")
 
 if __name__ == "__main__":

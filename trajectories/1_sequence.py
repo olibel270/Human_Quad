@@ -5,6 +5,7 @@
 
 import configparser
 import rospy
+import time
 import sys, threading
 import numpy as np
 from geometry_msgs.msg import PoseStamped
@@ -58,7 +59,7 @@ def publisher_thread(setpoints, publisher, rate, fly_time=0):
 def define_drone_setpoints(starting_setpoint):
     # Define local setpoint coordinates
     new_setpoints_coords = circle_waypoints(np.array([0,-1,1,180]),1,number_of_turns=3, waypoints_per_turn=32)
-    new_setpoints_coords = np.append(new_setpoints_coords, [[3.5,-1,1,180]],axis=0)
+    new_setpoints_coords = np.append(new_setpoints_coords, [[2.5,-1,1,180]],axis=0)
     print(new_setpoints_coords)
     new_setpoints = array_to_setpoints(new_setpoints_coords)
     tmp = [PoseStamped()] * (1+len(new_setpoints_coords))

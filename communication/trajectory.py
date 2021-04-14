@@ -9,8 +9,6 @@ class Trajectory:
             self.trajectories_paths = yaml.safe_load(conf_file_reader) 
 
     def start(self):
-        print("Start")
-        print(f"Name: {self.trajectory_name}")
         if self.trajectory_name in self.trajectories_paths:
             trajectory_filename = self.trajectories_paths['basepath'] + self.trajectories_paths[self.trajectory_name]
            
